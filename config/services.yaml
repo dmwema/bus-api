@@ -20,5 +20,119 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\State\NotificationStateProcessor:
+      bind:
+        $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
+        $removeProcessor: '@api_platform.doctrine.orm.state.remove_processor'
+
+    App\State\RouteStateProcessor:
+      bind:
+        $persistProcessor: '@api_platform.doctrine.orm.state.persist_processor'
+        $removeProcessor: '@api_platform.doctrine.orm.state.remove_processor'
+
+    acme_api.event.authentication_success_listener:
+      class: App\EventListener\AuthenticationSuccessListener
+      tags:
+        - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
+    admin.users:
+      class: App\Admin\UserAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\User, manager_type: orm, label: AppUsers, group: Vehicles, icon: "<i class=\"fa fa-car\"></i>" }
+    admin.vehicles:
+      class: App\Admin\VehicleAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Vehicle, manager_type: orm, label: Vehicles, group: Vehicles }
+    admin.routes:
+      class: App\Admin\RouteAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Route, manager_type: orm, label: routes, group: Vehicles }
+    admin.places:
+      class: App\Admin\PlaceAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Place, manager_type: orm, label: Places, group: Places, icon: "<i class=\"fa fa-city\"></i>" }
+    admin.regions:
+      class: App\Admin\RegionAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Region, manager_type: orm, label: Regions, group: Places }
+    admin.lines:
+      class: App\Admin\LineAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Line, manager_type: orm, group: "Places", label: "Lines" }
+      arguments:
+        - '@security.token_storage'
+      # Admin service for the Stop entity
+    admin.stops:
+      class: App\Admin\StopAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Stop, manager_type: orm, group: "Places", label: "Stops" }
+      arguments:
+        - '@security.token_storage'
+
+    # Admin service for the Enterprise entity
+    admin.enterprises:
+      class: App\Admin\EnterpriseAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Enterprise, manager_type: orm, group: "Enterprises", label: "Enterprise" }
+      arguments:
+        - '@security.token_storage'
+    admin.cards:
+      class: App\Admin\CardAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\NfcCard, manager_type: orm, label: 'Card list', group: Transactions, icon: "<i class=\"fa fa-money\"></i>" }
+    admin.transactions:
+      class: App\Admin\TransactionAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Transaction, manager_type: orm, label: 'Transactions list', group: Transactions }
+
+    admin.rechargeusers:
+      class: App\Admin\RechargeUserAdmin
+      arguments:
+        - '@security.token_storage'
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\RechargeUser, manager_type: orm, label: 'User Recharges', group: Transactions }
+    admin.rechargecartes:
+      class: App\Admin\RechargeCarteAdmin
+
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\RechargeCarte, manager_type: orm, label: 'Card Recharges', group: Transactions }
+    admin.versements:
+      class: App\Admin\VersementAdmin
+      arguments:
+        - '@security.token_storage'
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Versement, manager_type: orm, label: Versements, group: Transactions }
+
+    admin.logins:
+      class: App\Admin\LoginsAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Logins, manager_type: orm, label: Logins, group: Vehicles }
+
+    admin.alerts:
+      class: App\Admin\AlertAdmin
+      tags:
+        - { name: sonata.admin, model_class: App\Entity\Alert, manager_type: orm, label: Alert, group: Alerts,icon: "<i class=\"fa fa-bell\"></i>" }
+      # Admin service for the SubscriptionPlan entity
+    App\Admin\SubscriptionPlanAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, group: "Subscription", label: "Subscription Plan" }
+      arguments:
+        - ~
+        - App\Entity\SubscriptionPlan
+        - ~
+
+      #admin.notification:
+      #class: App\Admin\NotificationAdmin
+      #tags:
+      #    - { name: sonata.admin, model_class: App\Entity\Notification, manager_type: orm, label: Notification }
+    app.menu_listener:
+      class: App\EventListener\MenuBuilderListener
+      tags:
+        - { name: kernel.event_listener, event: sonata.admin.event.configure.menu.sidebar, method: addMenuItems }
+    Symfony\Component\Dotenv\Command\DotenvDumpCommand: ~
+    security.acl.permission.map:
+      class: Sonata\AdminBundle\Security\Acl\Permission\AdminPermissionMap
+
+    Sonata\UserBundle\Model\UserManagerInterface: '@sonata.user.manager.user'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

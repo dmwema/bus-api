@@ -1,0 +1,10 @@
+{# admin/line_list.html.twig #}
+{% if value is empty %}
+    <span class="label label-default">No lines</span>
+{% else %}
+    <ul>
+        {% for line in value %}
+            <li>{{ line.name }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}

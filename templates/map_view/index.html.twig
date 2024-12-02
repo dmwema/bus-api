@@ -1,0 +1,197 @@
+{% extends '@SonataAdmin/standard_layout.html.twig' %}
+  {% block header %}
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+  {% endblock %}
+    {% block top_bar_after_nav %} 
+        <li>
+            <a href="{{ path('acme_demo_hello_index', {'name': 'World'}) }}">
+                Maps
+            </a>
+        </li>
+    {% endblock %}
+
+    {% block sonata_admin_content %}
+  
+    <!-- before the closing <body> tag -->
+    
+
+    <div id="map" style="width:100%;height:1000px;"></div>
+
+    <script>
+      var arrayMarkers = [];
+      
+      var map;
+      var infowindow; 
+
+function setMarkers(vehs){
+        // Create info window
+        infowindow = new google.maps.InfoWindow({
+    maxWidth: 350,
+    pixelOffset: new google.maps.Size(-10,-25)
+  });
+  
+  var infoFn = function (count) {
+            return function (e) {
+              var ar = "";
+              if(vehs[count].alert != null && vehs[count].alert != undefined){
+                ar = '<tr><td><svg xmlns="http://www.w3.org/2000/svg" height="1.25em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><style>svg{fill:#fd0820}</style><path d="M224 0c-17.7 0-32 14.3-32 32V51.2C119 66 64 130.6 64 208v18.8c0 47-17.3 92.4-48.5 127.6l-7.4 8.3c-8.4 9.4-10.4 22.9-5.3 34.4S19.4 416 32 416H416c12.6 0 24-7.4 29.2-18.9s3.1-25-5.3-34.4l-7.4-8.3C401.3 319.2 384 273.9 384 226.8V208c0-77.4-55-142-128-156.8V32c0-17.7-14.3-32-32-32zm45.3 493.3c12-12 18.7-28.3 18.7-45.3H224 160c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7z"/></svg></td><td><span>' + vehs[count].alert[1] + 
+                  `</span><button class="btn btn-outline-primary btn-sm" name="alert_btn" onclick="updateAlert(${vehs[count].alert[0]},${count})">OK</button></td></tr>` ;
+              }
+                var content = '<div>' +
+                    '<table class="table table-striped"><tr><td><span>Location:</span> </td><td><span>' + vehs[count].lat+','+vehs[count].lng + '</span></td></tr>' +
+                    ar +
+                    '<tr><td><span> vehicle: </span> </td><td><span>' + vehs[count].name + '</span></td></tr>' +
+                    '<tr><td><span> Matricule: </span> </td><td><span>' + vehs[count].id + '</span></td></tr>' +
+                    '<tr><td><span> Total du jour: </span> </td><td><span>' + vehs[count].total + '</span></td></tr>' +
+                    '<tr><td><span> Driver: </span> </td><td><span>' + vehs[count].driver + '</span></td></tr>' +   
+                    '<tr><td><span> Driver Phone: </span> </td><td><span>' + vehs[count].phone + '</span></td></tr>' +                  
+                    '</table>'+
+                    
+                    '<br><button class="btn btn-primary">Camera 1</button> <button class="btn btn-warning">Camera 2</button> <button class="btn btn-danger">Stop engine</button> <br><br><a href="'+vehs[count].transUrl+'" class="btn btn-info">Transactions</a> <a href="'+vehs[count].routeUrl+'" class="btn btn-info">Routes</a> </div>';
+
+                infowindow.setContent(content);
+                infowindow.open(map);
+                infowindow.setPosition(new google.maps.LatLng(vehs[count].lat, vehs[count].lng));
+                arrayMarkers[count].infowindow = infowindow;
+            }
+        };
+        for (let i = 0; i < vehs.length; i++){
+          const image =
+          "{{  app.request.schemeAndHttpHost }}"+"/images/"+vehs[i].color;
+      
+        const marker = new google.maps.Marker({
+          map,
+          position: new google.maps.LatLng(vehs[i].lat, vehs[i].lng),
+          icon: image,
+          //animation: google.maps.Animation.DROP,
+          title: vehs[i].name,
+        });
+      
+        /*const marker = new google.maps.Marker({
+          position: new google.maps.LatLng(vehs[i].lat, vehs[i].lng),
+          map,
+          content: beachFlagImg,
+          title: vehs[i].name,
+          zIndex: vehs[i].id,
+            });*/
+          // Add a click listener for each marker, and set up the info window.
+          let fn = infoFn(i);
+          google.maps.event.addListener(marker, 'click', fn);
+          arrayMarkers[i] = marker;
+            
+        }
+
+
+      }
+    async function myMap() {
+      const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+      const { Map } = await google.maps.importLibrary("maps");
+   /* var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+      var myCenter = new google.maps.LatLng(-4.340912, 15.314222);
+      var mapCanvas = document.getElementById("map");
+      var mapOptions = {center: myCenter, zoom: 16};
+      var map = new google.maps.Map(mapCanvas, mapOptions);*/
+      var myStyles =[
+  {
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.neighborhood",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  }
+];
+
+
+      
+      map = new Map(document.getElementById("map"), {
+    center: { lat: -4.340912, lng: 15.314222 },
+    zoom: 16,
+    
+    styles: myStyles
+  });
+      
+  
+  var vehs = JSON.parse('{{ data | json_encode | raw }}');
+  
+
+  console.log(vehs)
+   setMarkers(vehs);
+
+       
+
+ 
+}
+
+
+
+var ajaxFn = function () {
+
+        console.log("ajax call");
+        
+        $.ajax({
+            url: "{{ path('app_map_view_auto') }}",
+            type: "GET",
+            success: function (response) {
+               console.log(response);
+               console.log(arrayMarkers.length);
+               for (let i = 0; i < arrayMarkers.length; i++){
+                arrayMarkers[i].setMap(null);
+               }
+               setMarkers(response);
+               setTimeout(ajaxFn, 5000);
+            }
+        });
+}
+setTimeout(ajaxFn, 5000);
+
+ updateAlert = (id, index)=>{
+     
+  //alert("hello");
+  console.log(id);
+  $.ajax({
+    url: "{{ path('app_map_alert_update') }}",
+    type: "POST",
+    data: {"id":id},
+    success: function (response) {
+      
+       console.log(response);
+       infowindow.close();
+       //arrayMarkers[index].infowindow.close();
+       
+       ajaxFn;
+       
+    }
+});
+}
+
+
+    
+
+
+    </script>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDDWnwhTmF5tvW9imeP8IN0UxywOhc_eM4&callback=myMap"></script>
+ 
+    {% endblock %}

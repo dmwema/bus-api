@@ -1,0 +1,96 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800&display=swap");
+body{
+    background-color: #eee;
+    font-family: "Poppins", sans-serif;
+    font-weight: 300
+}
+
+.progresses{
+    display: flex;
+    align-items: center
+}
+.line{
+    width: 76px;
+    height: 6px;
+    background: #63d19e
+}
+.steps{
+    display: flex;
+    background-color: #63d19e;
+    color: #fff;
+    font-size: 12px;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%
+}
+.check1{
+    display: flex;
+    background-color: #63d19e;
+    color: #fff;
+    font-size: 17px;
+    width: 60px;
+    height: 60px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 10px
+}
+.check2{
+    display: flex;
+    background-color: #63d19e;
+    color: #fff;
+    font-size: 10px;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 5px
+}
+.failed1{
+    display: flex;
+    background-color: #e6120b;color: #fff;
+    font-size: 17px;width: 60px;
+    height: 60px;align-items: center;
+    justify-content: center;
+    border-radius: 50%;margin-bottom: 10px
+}
+.failed2{
+    display: flex;
+    background-color: #e6120b;
+    color: #fff;
+    font-size: 10px;
+    width: 30px;height: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 5px
+}
+.invoice-link{
+    font-size: 15px
+}
+.order-button{
+    height: 50px
+}
+.background-muted{
+    background-color:#fafafc
+}
+.otto {
+  background: white;
+  color: white;
+  text-shadow: 0 1px 0 #ccc,
+               0 2px 0 #c9c9c9,
+               0 3px 0 #bbb,
+               0 4px 0 #b9b9b9,
+               0 5px 0 #aaa,
+               0 6px 1px rgba(0,0,0,.1),
+               0 0 5px rgba(0,0,0,.1),
+               0 1px 3px rgba(0,0,0,.3),
+               0 3px 5px rgba(0,0,0,.2),
+               0 5px 10px rgba(0,0,0,.25),
+               0 10px 10px rgba(0,0,0,.2),
+               0 20px 20px rgba(0,0,0,.15);
+}

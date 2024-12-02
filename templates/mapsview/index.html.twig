@@ -1,0 +1,24 @@
+{% extends '@SonataAdmin/standard_layout.html.twig' %}
+    {% block top_bar_after_nav %} 
+        <li>
+            <a href="{{ path('app_map_view', {'name': 'view'}) }}">
+                Maps
+            </a>
+        </li>
+    {% endblock %}
+    {% block item %}
+        <a href="{{ path('app_map_view', {'name': 'view'}) }}">
+            Maps
+        </a>
+    {% endblock %}
+
+    {% block sonata_admin_content %}
+  
+    <!-- before the closing <body> tag -->
+    
+
+    <h1>This is H1</h1>
+    <h1>This is H1</h1>
+    <h1>This is H1</h1>
+ 
+    {% endblock %}

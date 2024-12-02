@@ -1,0 +1,140 @@
+{% extends 'base.html.twig' %}
+    {% block stylesheets %}
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    {% endblock %}
+  {% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/@babel/polyfill/dist/polyfill.min.js"></script>
+  {% endblock %}
+   
+
+    {% block body %}
+
+    <div id="map" style="width:100%;height:1000px;"></div>
+
+    <script>
+      var arrayMarkers = [];
+      
+      var map;
+      var infowindow; 
+      var code ="";
+      var ctype = "";
+
+    function setMarkers(vehs){
+        // Create info window
+        infowindow = new google.maps.InfoWindow({
+    maxWidth: 350,
+    pixelOffset: new google.maps.Size(-10,-25)
+  });
+  
+        var infoFn = function (count) {
+            return function (e) {
+              var ar = "";
+              
+                var content = '<div>' +
+                    '<table class="table table-striped"><tr><td><span>Location:</span> </td><td><span>' + vehs[count].currentLat+','+vehs[count].currentLng + '</span></td></tr>' +
+                    ar +
+                    '<tr><td><span> vehicle: </span> </td><td><span>' + vehs[count].name + '</span></td></tr>' +
+                    '<tr><td><span> Matricule: </span> </td><td><span>' + vehs[count].matricule + '</span></td></tr>' +                  
+                    '</table>'+
+                    
+                    '<br><button class="btn btn-primary">Camera 1</button> <button class="btn btn-warning">Camera 2</button> <button class="btn btn-danger">Stop engine</button> <br><br><a href="'+vehs[count].transUrl+'" class="btn btn-info">Transactions</a> <a href="'+vehs[count].routeUrl+'" class="btn btn-info">Routes</a> </div>';
+
+                infowindow.setContent(content);
+                infowindow.open(map);
+                infowindow.setPosition(new google.maps.LatLng(vehs[count].currentLat, vehs[count].currentLng));
+                arrayMarkers[count].infowindow = infowindow;
+            }
+        };
+
+        for (let i = 0; i < vehs.length; i++){
+          const image =
+          "{{  app.request.schemeAndHttpHost }}"+"/images/bus_red.png";
+      
+        const marker = new google.maps.Marker({
+          map,
+          position: new google.maps.LatLng(vehs[i].currentLat, vehs[i].currentLng),
+          icon: image,
+          //animation: google.maps.Animation.DROP,
+          title: vehs[i].name,
+        });
+      
+            /*const marker = new google.maps.Marker({
+              position: new google.maps.LatLng(vehs[i].lat, vehs[i].lng),
+              map,
+              content: beachFlagImg,
+              title: vehs[i].name,
+              zIndex: vehs[i].id,
+                });*/
+              // Add a click listener for each marker, and set up the info window.
+          let fn = infoFn(i);
+          google.maps.event.addListener(marker, 'click', fn);
+          arrayMarkers[i] = marker;
+            
+        }
+
+
+      }
+    async function myMap() {
+      const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+      const { Map } = await google.maps.importLibrary("maps");
+   /* var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+      var myCenter = new google.maps.LatLng(-4.340912, 15.314222);
+      var mapCanvas = document.getElementById("map");
+      var mapOptions = {center: myCenter, zoom: 16};
+      var map = new google.maps.Map(mapCanvas, mapOptions);*/
+  var myStyles =[
+  {
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.neighborhood",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  }
+];
+
+
+      
+map = new Map(document.getElementById("map"), {
+    center: { lat: -4.340912, lng: 15.314222 },
+    zoom: 16,
+    
+    styles: myStyles
+  });
+      
+  console.log(JSON.parse('{{ vehicles | json_encode | raw }}'));
+  var vehs = JSON.parse('{{ vehicles | json_encode | raw }}');
+  code={{code}};
+  ctype = {{type}};
+
+  console.log(vehs)
+   setMarkers(vehs);
+
+}
+
+
+
+
+    </script>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDDWnwhTmF5tvW9imeP8IN0UxywOhc_eM4&callback=myMap" async defer></script>
+     {% endblock %}

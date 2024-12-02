@@ -1,17 +1,112 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+        <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+	<meta name="keywords" content="Show, TV, Cinema, Streaming, Serie">
+	<meta name="author" content="BN Mara">
+      
+<title>TransCar - Convenient & Secure Bus Services{% block title %} {%endblock%}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 
+		<!--====>> Favicon icon CSS <<====-->
+		<link rel="shortcut icon" href="favicon.png">
+
+		<!-- Fontawesome -->
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+		<!--====>> Google fonts <<====-->
+		<link href="https://fonts.googleapis.com/css?family=Poppins:400,500,600,700,800,900&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+
+	  	<link href="{{asset('theme/vendor/fancybox/dist/jquery.fancybox.min.css')}}" type="text/css" rel="stylesheet" />
+		<!--====>> Index CSS <<====-->
+		<link href="{{asset('theme/css/index.css')}}" type="text/css" rel="stylesheet" />
+        
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
+         <link rel="stylesheet" href="{{asset('css/bootstrap.min.css')}}">
+         <link rel="stylesheet" href="{{ asset('css/bootstrap-reboot.min.css') }}">
+	<link rel="stylesheet" href="{{ asset('css/bootstrap-grid.min.css') }}">
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
+            <script src="https://kit.fontawesome.com/966d4eef42.js" crossorigin="anonymous"></script>
+            <script type="text/javascript" src="{{asset('js/bootstrap.min.js')}}"></script>
+            <script type="text/javascript"src="{{asset('js/jquery.37.js')}}"></script>
         {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
+            
+          
+            {{ encore_entry_script_tags('app') }}
+
         {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+      {% block body %}
+        
+      {% endblock %}
+
+<!-- ===> Juery 3.2.1 JS <==== -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!-- ===> Juery UI 1.12.1 JS <==== -->
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<!-- ===> Bootstrap 4 JS <==== -->
+<script src="{{asset('theme/vendor/bootstrap/js/bootstrap.min.js')}}"></script>
+
+<!-- ===> Lazy loader JS <==== -->
+<script src="{{ asset('theme/vendor/lazy-load/jquery.lazy.min.js') }}"></script>
+
+<!-- ===> Slick slider JS <==== -->
+<script src="{{ asset('theme/vendor/slick/slick/slick.min.js') }}"></script>
+
+<!-- ===> Paroller JS <==== -->
+<script src="{{ asset('theme/vendor/paroller/dist/jquery.paroller.min.js') }}"></script>
+
+<!-- ===> Scrollbar JS <==== -->
+<script src="{{ asset('theme/vendor/scrollbar/jquery.mCustomScrollbar.concat.min.js') }}"></script>
+
+<!-- ===> Tilt JS <==== -->
+<script src="{{ asset('theme/vendor/tilt/tilt.jquery.js') }}"></script>
+
+<!-- ===> Fancybox JS <==== -->
+<script src="{{ asset('theme/vendor/fancybox/dist/jquery.fancybox.min.js') }}"></script>
+
+<!-- ===> Input mask JS <==== -->
+<script src="{{ asset('theme/vendor/input-mask/jquery.mask.min.js') }}"></script>
+
+<!-- Date picker -->
+<script src="{{ asset('theme/vendor/bootstrap-datetimepicker/moment.js') }}"></script>
+<script src="{{ asset('theme/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js') }}"></script>
+
+<!-- Masonry JS (using CDN for this one) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
+
+<!-- Images loader (using CDN for this one) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.min.js"></script>
+<script src="{{ asset('theme/vendor/shuffle/isotope.js') }}"></script>
+
+<script src="{{ asset('theme/form/jquery.form.js') }}"></script>
+<script src="{{ asset('theme/form/jquery.validate.min.js') }}"></script>
+<script src="{{ asset('theme/form/jquery.form-init.js') }}"></script>
+
+<!-- ===> noUiSlider JS <==== -->
+<!-- <script src="{{ asset('theme/vendor/touchpunch/touchpunch.js') }}"></script> -->
+<script src="{{ asset('theme/vendor/noUiSlider/nouislider.min.js') }}"></script>
+<script src="{{ asset('theme/vendor/wnumb/wNumb.js') }}"></script>
+
+<!-- ===> Player JS <==== -->
+<script src="{{ asset('theme/vendor/awp-player/wavesurfer.min.js') }}"></script>
+<script src="{{ asset('theme/vendor/awp-player/jsmediatags.min.js') }}"></script>
+<script src="{{ asset('theme/vendor/awp-player/new_cb.js') }}"></script>
+<script src="{{ asset('theme/vendor/awp-player/new.js') }}"></script>
+<script src="{{ asset('theme/vendor/instafeed/instafeed.min.js') }}"></script>
+
+<!-- ===> Common JS <==== -->
+<script src="{{ asset('theme/js/common.js') }}"></script>
+
     </body>
 </html>
