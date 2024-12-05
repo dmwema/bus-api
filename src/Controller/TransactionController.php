@@ -23,8 +23,8 @@ class TransactionController extends AbstractController
     private $generator;
     public function __construct(private EntityManagerInterface $em){
         $this->generator = new StringGenerator();
-
     }
+
     #[Route('/transaction', name: 'app_transaction')]
     public function index(): Response
     {
@@ -32,6 +32,7 @@ class TransactionController extends AbstractController
             'controller_name' => 'TransactionController',
         ]);
     }
+
     #[Route('/transaction/process', name: 'app_transaction_process')]
     public function process(Request $request): Response
     {
@@ -43,7 +44,6 @@ class TransactionController extends AbstractController
         $route = $this->em->getRepository(EntityRoute::class)->find($routeId);
         $line = $route->getLine();
         $trans = new Transaction();
-        //$card = new NfcCard();
 
         if($card){
             if(!$card->isIsActive()){
@@ -85,13 +85,9 @@ class TransactionController extends AbstractController
             $this->em->persist($trans);
             $this->em->flush();
             return $this->json(["status"=>true,"message"=>"Paiement effectue avec succes"]);
-
-
         }else{
             return $this->json(["status"=>false,"message"=>"Votre carte est invalide."],400);
         }
-        
-
     }
     #[Route('/api/transaction/recharge', name: 'app_transaction_recharge')]
     public function recharge(Request $request): Response
@@ -106,15 +102,11 @@ class TransactionController extends AbstractController
             $subs = $this->em->getRepository(SubscriptionPlan::class)->find($subs_id);
             if(!$subs){
                 return $this->json(["status"=>false,"message"=> "Subscription Plan invalid"]);
-
             }
             
             $amount = $subs->getAmount();
-            
-
         }elseif($type == "Fix"){
             $amount = $decoded->amount;
-
         }else{
             return $this->json(["status"=>false,"message"=> "Type de Recharge invalide"]);
         }

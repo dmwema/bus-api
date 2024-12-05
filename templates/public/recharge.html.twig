@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}- Home -{% endblock %}
+
+{% block body %}
+
+<div class="home-page">
+    <div class="header-wrap">
+        <header>
+            <a href="{{ path('app_public') }}" class="logo">
+                <img src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" class="lazy" width="64" data-src="{{ asset('images/logo_title.png') }}" alt="logo">
+                <span class="logo-text">
+                    <span>TransCar</span>
+                    <span>Bus Services</span>
+                </span>
+            </a>
+        </header>
+    </div>
+    <div class="main-slider-wrap">
+        <div style="padding: 80px 0"
+             data-slick='{
+                 "arrows": false,
+                 "fade": true,
+                 "speed": 500
+             }'>
+            <div class="tt-slide">
+                <div class="container">
+                    <div class="row">
+                        <div class="py-4" style="background-color: white">
+                            <div class="form-popup-inside mfp-inside row">
+                                <h3 class="text-center">Rechargez-vous</h3>
+                                {% for flashMessage in app.session.flashbag.get('error') %}
+                                    <div class="alert alert-danger">
+                                        {{ flashMessage }}
+                                    </div>
+                                {% endfor %}
+                                <p class="mt-4">
+                                    <b style="margin-right: 20px;">
+                                        <span style="font-size: 1.5rem">{{ step }}</span>/2
+                                    </b>
+                                    <span class="text-primary">{{ step == 1 ? 'Type de recharge' : (step == 2 ? 'Details' : '') }}</span>
+                                </p>
+                                <hr>
+                                {% if step == 1 %}
+                                    <form method="post">
+                                        <div class="col-md-6 p-0">
+                                            <input class="form-control" type="text" name="card" id="card" value="" placeholder="Numero de la carte" required>
+                                        </div>
+                                        <p class="mt-2">Quel type de recharge voulez-vous faire ?</p>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="type" id="type_fixe" value="FIXE" checked>
+                                            <label class="form-check-label" for="type_fixe">
+                                                <i class="fa-solid fa-bus-simple"></i><span class="ml-2">Recharge fixe</span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check mt-3">
+                                            <input class="form-check-input" type="radio" name="type" id="type_subs" value="SUBSCRIPTION">
+                                            <label class="form-check-label" for="type_subs">
+                                                <i class="fa-solid fa-link"></i><span class="ml-2">Abonnement</span>
+                                            </label>
+                                        </div>
+                                        <button type="submit" class="btn mt-4" style="color: white">Suivant</button>
+                                    </form>
+                                {% else %}
+                                    {% if step ==2 %}
+                                        <div class="col-md-6">
+                                            <p class="mb-0" style="display: flex; justify-content: space-between"><span>Num. carte</span><b class="text-primary">#{{ card.uid }}</b></p>
+                                            <p style="display: flex; justify-content: space-between"><span>Type</span> <b>{{ type }}</b></p>
+                                            {% if subs is not null %}
+                                                <p>Quel abonnement voulez-vous payer ?</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+
+                                        </div>
+                                        {% if subs is not null %}
+                                        {% else %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
