@@ -29,24 +29,39 @@
                         <div class="py-4" style="background-color: white">
                             <div class="form-popup-inside mfp-inside row">
                                 <h3 class="text-center">Rechargez-vous</h3>
-                                {% for flashMessage in app.session.flashbag.get('error') %}
-                                    <div class="alert alert-danger">
-                                        {{ flashMessage }}
-                                    </div>
-                                {% endfor %}
-                                <p class="mt-4">
-                                    <b style="margin-right: 20px;">
-                                        <span style="font-size: 1.5rem">{{ step }}</span>/2
-                                    </b>
-                                    <span class="text-primary">{{ step == 1 ? 'Type de recharge' : (step == 2 ? 'Details' : '') }}</span>
-                                </p>
+                                {% include 'public/partials/_alerts.html.twig' %}
+                                <div style="display: flex; align-items: center; justify-content: space-between">
+                                    <p class="mt-4 mb-2">
+                                        {% if paying != true %}
+                                        <b style="margin-right: 20px;">
+                                            <span style="font-size: 1.5rem">{{ step }}</span>/2
+                                        </b>
+                                        <span class="text-primary">{{ step == 1 ? 'Type de recharge' : (step == 2 ? 'Details' : '') }}</span>
+                                        {% else %}
+                                        Encours de paiement...
+                                        {% endif %}
+                                    </p>
+                                    <form method="post" onsubmit="return confirm('Etes-vous sur de vouloir abandonner ?')">
+                                        <input type="hidden" name="cancel" value="1">
+                                        <button class="close" type="submit" aria-label="Close" data-dismiss="modal">
+                                            <svg class="icon icon-close" width="20" height="21" viewBox="0 0 20 21" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M9.04297 10.1921L0.195312 19.0398C0.0651042 19.157 0 19.3002 0 19.4695C0 19.6518 0.0651042 19.8015 0.195312 19.9187C0.260417 19.9838 0.325521 20.0294 0.390625 20.0554C0.46875 20.0945 0.553385 20.114 0.644531 20.114C0.722656 20.114 0.800781 20.0945 0.878906 20.0554C0.957031 20.0294 1.02214 19.9838 1.07422 19.9187L10 11.0125L18.9258 19.9187C18.9779 19.9838 19.043 20.0294 19.1211 20.0554C19.1992 20.0945 19.2773 20.114 19.3555 20.114C19.4466 20.114 19.5312 20.0945 19.6094 20.0554C19.6875 20.0294 19.7526 19.9838 19.8047 19.9187C19.9349 19.8015 20 19.6518 20 19.4695C20 19.3002 19.9349 19.157 19.8047 19.0398L10.957 10.1921L19.8242 1.32495C19.9414 1.20776 20 1.06453 20 0.895264C20 0.712972 19.9414 0.556722 19.8242 0.426514C19.694 0.309326 19.5378 0.250732 19.3555 0.250732C19.1862 0.250732 19.043 0.309326 18.9258 0.426514L10 9.35229L1.07422 0.426514C0.957031 0.309326 0.807292 0.250732 0.625 0.250732C0.455729 0.250732 0.30599 0.309326 0.175781 0.426514C0.0585938 0.556722 0 0.712972 0 0.895264C0 1.06453 0.0585938 1.20776 0.175781 1.32495L9.04297 10.1921Z"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
                                 <hr>
                                 {% if paying %}
-                                    <div class="p-4">
-                                        <img src="{{ asset('images/loading.gif') }}" alt="loading" width="50">
-                                        <h5 class="mt-4"> paiememnt en cours, Veuillez continuer avec votre telephone</h5>
-                                        <button type="submit" class="btn mt-4" style="color: white">Terminer</button>
-                                    </div>
+                                    <form method="post">
+                                        <input type="hidden" name="paymentId" value="{{ paymentId }}">
+                                        <input type="hidden" name="finish" value="1">
+                                        <div class="p-4" style="display: flex; flex-direction: column; text-align: center; align-items: center; justify-content: center">
+                                            <img src="{{ asset('images/loading.gif') }}" alt="loading" width="50">
+                                            <h5 class="mt-4"> Paiememnt en cours, Veuillez continuer avec votre telephone</h5>
+                                            <p style="max-width: 500px; margin: auto">Une fois le processus de paiement termine sur votre telephone, veuillez cliquer sur le bouton terminer.</p>
+                                            <button type="submit" class="btn mt-4" style="color: white">Terminer</button>
+                                        </div>
+                                    </form>
                                 {% else %}
                                 {% if step == 1 %}
                                     <form method="post">

@@ -7,6 +7,7 @@ use App\Entity\Payment;
 use App\Entity\Vehicle;
 use App\Form\TrackRequestFormType;
 use App\Repository\NfcCardRepository;
+use App\Repository\PaymentRepository;
 use App\Repository\SubscriptionPlanRepository;
 use App\Service\PaymentService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,6 +15,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class PublicController extends AbstractController
 {
@@ -22,6 +28,7 @@ class PublicController extends AbstractController
         private readonly NfcCardRepository $cardRepository,
         private readonly SubscriptionPlanRepository $subscriptionPlanRepository,
         private readonly PaymentService $paymentService,
+        private readonly PaymentRepository $paymentRepository
     ){}
 
     /**
@@ -79,7 +86,8 @@ class PublicController extends AbstractController
         $step = $request->getSession()->get('recharge_step') ?? 1;
         $subs = null;
         $type = $request->getSession()->get('recharge_type') ?? null;
-        $paying = $request->getSession()->get('paying') ?? false;
+        $paying = $request->getSession()->get('recharge_paying') ?? false;
+        $paymentId = $request->getSession()->get('recharge_payment_id') ?? false;
 
         $card = null;
         $uid = $request->getSession()->get('recharge_card') ?? null;
@@ -87,7 +95,42 @@ class PublicController extends AbstractController
         if ($uid != null) {
             $card = $this->cardRepository->findOneBy(['uid' => $uid]);
         }
+
         if ($request->getMethod() === Request::METHOD_POST) {
+            $cancel = $request->request->get("cancel");
+
+            if (isset($cancel)) {
+                $this->killProcess($request);
+                return $this->redirectToRoute('app_public');
+            }
+
+            $finish = $request->request->get("finish");
+            if (isset($finish)) {
+                $payment = $this->paymentRepository->find($paymentId);
+                if (isset($payment)) {
+                    try {
+                        $paymentStatusData = $this->paymentService->checkPaymentStatus($payment);
+                        if (!$paymentStatusData['success']) {
+                            $this->addFlash('error', 'Le paiement a echoue, Veuillez ressayer');
+                            $request->getSession()->remove('recharge_payment_id');
+                        } else {
+                            // call subs API ...
+                            $this->addFlash(
+                                'success',
+                                'Votre paiement de '
+                                    . $payment->getAmount() . ' CDF'
+                                    . ' a ete effectue avec succes. Merci de votre confiance'
+                            );
+                            $this->killProcess($request);
+                        }
+                    } catch (ClientExceptionInterface $e) {
+                        $this->addFlash('error', $e->getMessage());
+                        $request->getSession()->remove('recharge_payment_id');
+                    }
+                }
+                return $this->redirect($request->headers->get('referer'));
+            }
+
             if ($step == 1) {
                 $type = $request->request->get('type');
 
@@ -114,8 +157,7 @@ class PublicController extends AbstractController
                     return $this->redirect($request->headers->get('referer'));
                 }
 
-                $subscription = null;
-                if ($type = "SUBSCRIPTION") {
+                if ($type === "SUBSCRIPTION") {
                     $subscriptionId = $request->request->get('subscription');
                     if (empty($subscriptionId)) {
                         $this->addFlash("error", "Veuillez choisir un abonnement");
@@ -126,34 +168,37 @@ class PublicController extends AbstractController
                         $this->addFlash("error", "Veuillez choisir un abonnement");
                         return $this->redirect($request->headers->get('referer'));
                     }
-                    $phoneNumber = $this->paymentService->formatPhoneNumber($request->request->get('phoneNumber'));
-                    if (empty($phoneNumber)) {
-                        $this->addFlash("error", "Veuillez choisir un numero de telephone valide");
-                        return $this->redirect($request->headers->get('referer'));
-                    }
+                }
 
-                    $payment = (new Payment())
-                        ->setCreatedAt(new \DateTimeImmutable())
-                        ->setPhoneNumber($phoneNumber)
-                        ->setAmount($amount)
-                        ->setResourceId($subscriptionId)
-                        ->setRef(uniqid())
-                    ;
-                    $paymentInfos = $this->paymentService->makePayment($payment);
-
-                    if (!$paymentInfos['success']) {
-                        $this->addFlash("error", $paymentInfos['message']);
-                        return $this->redirect($request->headers->get('referer'));
-                    }
-
-                    $payment
-                        ->setOrderNumber($paymentInfos['orderNumber']);
-
-                    $paying = true;
-                    $request->getSession()->set("paying", $paying);
-                    $this->addFlash("success", "Processuss de paiement en cours... Veuillez continuer avec votre telephone");
+                $phoneNumber = $this->paymentService->formatPhoneNumber($request->request->get('phoneNumber'));
+                if (empty($phoneNumber)) {
+                    $this->addFlash("error", "Veuillez choisir un numero de telephone valide");
                     return $this->redirect($request->headers->get('referer'));
                 }
+
+                $payment = (new Payment())
+                    ->setCreatedAt(new \DateTimeImmutable())
+                    ->setPhoneNumber($phoneNumber)
+                    ->setAmount($amount)
+                    ->setResourceId($card->getId())
+                    ->setRef(uniqid())
+                ;
+                $paymentInfos = $this->paymentService->makePayment($payment);
+
+                if (!$paymentInfos['success']) {
+                    $this->addFlash("error", $paymentInfos['message']);
+                    return $this->redirect($request->headers->get('referer'));
+                }
+
+                $payment->setOrderNumber($paymentInfos['orderNumber']);
+                $this->paymentRepository->save($payment);
+
+                $paymentId = $payment->getId();
+                $request->getSession()->set('recharge_payment_id', $paymentId);
+
+                $request->getSession()->set("recharge_paying", true);
+                $this->addFlash("success", "Processuss de paiement en cours... Veuillez continuer avec votre telephone");
+                return $this->redirect($request->headers->get('referer'));
             }
         }
 
@@ -162,11 +207,12 @@ class PublicController extends AbstractController
         }
 
         return $this->render('public/recharge.html.twig', [
-            'step' => $step,
-            'type' => $type,
-            'subs' => $subs,
-            'paying' => $paying,
-            'card' => $card,
+            'step'      => $step,
+            'type'      => $type,
+            'subs'      => $subs,
+            'paying'    => $paying,
+            'card'      => $card,
+            'paymentId' => $paymentId
         ]);
     }
 
@@ -181,7 +227,13 @@ class PublicController extends AbstractController
         }
         $vehicles = $card->getLiness()[0]->getVehicles();
         return $this->json($vehicles, 200);
+    }
 
-
+    private function killProcess (Request $request) : void {
+        $request->getSession()->remove('recharge_step');
+        $request->getSession()->remove('recharge_type');
+        $request->getSession()->remove('recharge_paying');
+        $request->getSession()->remove('recharge_finish');
+        $request->getSession()->remove('recharge_payment_id');
     }
 }
