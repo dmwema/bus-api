@@ -41,6 +41,13 @@
                                     <span class="text-primary">{{ step == 1 ? 'Type de recharge' : (step == 2 ? 'Details' : '') }}</span>
                                 </p>
                                 <hr>
+                                {% if paying %}
+                                    <div class="p-4">
+                                        <img src="{{ asset('images/loading.gif') }}" alt="loading" width="50">
+                                        <h5 class="mt-4"> paiememnt en cours, Veuillez continuer avec votre telephone</h5>
+                                        <button type="submit" class="btn mt-4" style="color: white">Terminer</button>
+                                    </div>
+                                {% else %}
                                 {% if step == 1 %}
                                     <form method="post">
                                         <div class="col-md-6 p-0">
@@ -63,20 +70,57 @@
                                     </form>
                                 {% else %}
                                     {% if step ==2 %}
+                                        <form method="post" class="row">
                                         <div class="col-md-6">
-                                            <p class="mb-0" style="display: flex; justify-content: space-between"><span>Num. carte</span><b class="text-primary">#{{ card.uid }}</b></p>
-                                            <p style="display: flex; justify-content: space-between"><span>Type</span> <b>{{ type }}</b></p>
+                                            <div style="border-radius: 10px; border: 1px solid #eee; padding: 20px" class="mb-4">
+                                                <p class="mb-0" style="display: flex; justify-content: space-between"><span>Num. carte</span><b class="text-primary">#{{ card.uid }}</b></p>
+                                                <p style="display: flex; justify-content: space-between" class="mb-0 "><span>Type</span> <b>{{ type }}</b></p>
+                                            </div>
                                             {% if subs is not null %}
-                                                <p>Quel abonnement voulez-vous payer ?</p>
+                                                <p class="mb-3"><b>Quel abonnement voulez-vous payer ?</b></p>
+                                                {% if subs is empty %}
+                                                    <div class="alert alert-info">Aucun plan d'abonnement disponible</div>
+                                                {% else %}
+                                                        <div style="border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+                                                        {% for sub in subs %}
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="subscription" id="sub_{{ sub.id }}" value="{{ sub.id }}">
+                                                            <label class="form-check-label" for="sub_{{ sub.id }}">
+                                                                <b class="ml-2">{{ sub.title }}</b>
+                                                            </label>
+                                                            <p class="mb-1"><i class="fa-solid fa-bars"></i><span class="ml-2">{{ sub.description }}</span></p>
+                                                            <p class="mb-2">{{ sub.duration }} Jours</p>
+                                                            <p class="text-primary mb-2"><b>{{ sub.amount }} CDF</b></p>
+                                                        </div>
+                                                        {% endfor %}
+                                                        </div>
+                                                {% endif %}
                                             {% endif %}
                                         </div>
                                         <div class="col-md-6">
+                                            <label for="amount">Combien voulez-vous payer</label>
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">CDF</span>
+                                                </div>
+                                                <input type="text" class="form-control" name="amount" id="amount" aria-label="Amount (CDF)">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">.00</span>
+                                                </div>
+                                            </div>
 
+                                            <label for="phoneNumber">Numero mobile money</label>
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">+243</span>
+                                                </div>
+                                                <input type="text" class="form-control" name="phoneNumber" id="phoneNumber" aria-label="Numero mobile money">
+                                            </div>
+                                            <button type="submit" class="btn mt-4" style="color: white">Confirmer</button>
                                         </div>
-                                        {% if subs is not null %}
-                                        {% else %}
-                                        {% endif %}
+                                        </form>
                                     {% endif %}
+                                {% endif %}
                                 {% endif %}
                             </div>
                         </div>

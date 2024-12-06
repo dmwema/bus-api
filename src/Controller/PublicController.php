@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\NfcCard;
+use App\Entity\Payment;
 use App\Entity\Vehicle;
 use App\Form\TrackRequestFormType;
 use App\Repository\NfcCardRepository;
+use App\Repository\SubscriptionPlanRepository;
+use App\Service\PaymentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +19,9 @@ class PublicController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly NfcCardRepository $cardRepository
+        private readonly NfcCardRepository $cardRepository,
+        private readonly SubscriptionPlanRepository $subscriptionPlanRepository,
+        private readonly PaymentService $paymentService,
     ){}
 
     /**
@@ -66,11 +71,15 @@ class PublicController extends AbstractController
         return $this->render('public/mapview2.html.twig', ['vehicles'=>$vehicles,"card"=>$card, "type"=>$type,"code"=>$code]);
     }
 
+    /**
+     * @throws \JsonException
+     */
     #[Route('/recharge', name:'app_recharge')]
     public function recharge(Request $request): Response{
         $step = $request->getSession()->get('recharge_step') ?? 1;
         $subs = null;
         $type = $request->getSession()->get('recharge_type') ?? null;
+        $paying = $request->getSession()->get('paying') ?? false;
 
         $card = null;
         $uid = $request->getSession()->get('recharge_card') ?? null;
@@ -99,18 +108,65 @@ class PublicController extends AbstractController
                 $request->getSession()->set('recharge_card', $uid);
                 $request->getSession()->set('recharge_type', $type);
             } else if ($step == 2) {
+                $amount = $request->request->get('amount');
+                if (empty($amount)) {
+                    $this->addFlash("error", "Veuillez entrer un montant valide");
+                    return $this->redirect($request->headers->get('referer'));
+                }
+
+                $subscription = null;
+                if ($type = "SUBSCRIPTION") {
+                    $subscriptionId = $request->request->get('subscription');
+                    if (empty($subscriptionId)) {
+                        $this->addFlash("error", "Veuillez choisir un abonnement");
+                        return $this->redirect($request->headers->get('referer'));
+                    }
+                    $subscription = $this->subscriptionPlanRepository->find($subscriptionId);
+                    if (empty($subscription)) {
+                        $this->addFlash("error", "Veuillez choisir un abonnement");
+                        return $this->redirect($request->headers->get('referer'));
+                    }
+                    $phoneNumber = $this->paymentService->formatPhoneNumber($request->request->get('phoneNumber'));
+                    if (empty($phoneNumber)) {
+                        $this->addFlash("error", "Veuillez choisir un numero de telephone valide");
+                        return $this->redirect($request->headers->get('referer'));
+                    }
+
+                    $payment = (new Payment())
+                        ->setCreatedAt(new \DateTimeImmutable())
+                        ->setPhoneNumber($phoneNumber)
+                        ->setAmount($amount)
+                        ->setResourceId($subscriptionId)
+                        ->setRef(uniqid())
+                    ;
+                    $paymentInfos = $this->paymentService->makePayment($payment);
+
+                    if (!$paymentInfos['success']) {
+                        $this->addFlash("error", $paymentInfos['message']);
+                        return $this->redirect($request->headers->get('referer'));
+                    }
+
+                    $payment
+                        ->setOrderNumber($paymentInfos['orderNumber']);
+
+                    $paying = true;
+                    $request->getSession()->set("paying", $paying);
+                    $this->addFlash("success", "Processuss de paiement en cours... Veuillez continuer avec votre telephone");
+                    return $this->redirect($request->headers->get('referer'));
+                }
             }
         }
 
         if ($type == "SUBSCRIPTION") {
-            $subs = $card
+            $subs = $this->subscriptionPlanRepository->findAll();
         }
 
         return $this->render('public/recharge.html.twig', [
             'step' => $step,
             'type' => $type,
             'subs' => $subs,
-            'card' => $card
+            'paying' => $paying,
+            'card' => $card,
         ]);
     }
 
