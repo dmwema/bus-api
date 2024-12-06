@@ -107,12 +107,12 @@ class PublicController extends AbstractController
             $finish = $request->request->get("finish");
             if (isset($finish)) {
                 $payment = $this->paymentRepository->find($paymentId);
+                $request->getSession()->remove('recharge_paying');
                 if (isset($payment)) {
                     try {
                         $paymentStatusData = $this->paymentService->checkPaymentStatus($payment);
                         if (!$paymentStatusData['success']) {
                             $this->addFlash('error', 'Le paiement a echoue, Veuillez ressayer');
-                            $request->getSession()->remove('recharge_payment_id');
                         } else {
                             // call subs API ...
                             $this->addFlash(
