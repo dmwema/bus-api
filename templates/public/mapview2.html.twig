@@ -1,6 +1,32 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+
+    <div class="header-wrap">
+        <header>
+            <a href="{{ path('app_public') }}" class="logo">
+                <img src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" class="lazy" width="64" data-src="{{ asset('images/logo_title.png') }}" alt="logo">
+                <span class="logo-text">
+                    <span>TransCar</span>
+                    <span>Bus Services</span>
+                </span>
+            </a>
+            <div class="header-right">
+                <nav  class="main-nav" data-menu-gradient>
+                    <ul class="menu">
+                        <li><a href="{{ path('app_recharge') }}">RECHARGE</a></li>
+                    </ul>
+                    <span class="menu-gradient"></span>
+                </nav>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </header>
+    </div>
+
     <div class="card">
         <div id="map" style="height: 100%; width: 100%;"></div>
     </div>

@@ -38,6 +38,9 @@ class Payment
     #[ORM\Column(nullable: true)]
     private ?bool $paid = null;
 
+    #[ORM\ManyToOne]
+    private ?Currency $currency = null;
+
     public function __construct()
     {
         $this->created_at = new \DateTimeImmutable();
@@ -140,6 +143,18 @@ class Payment
     public function setPaid(?bool $paid): static
     {
         $this->paid = $paid;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?Currency
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(?Currency $currency): static
+    {
+        $this->currency = $currency;
 
         return $this;
     }

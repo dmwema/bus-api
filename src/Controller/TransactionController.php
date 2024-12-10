@@ -10,6 +10,7 @@ use App\Entity\SubscriptionPlan;
 use App\Entity\Transaction;
 use App\Entity\User;
 use App\Helper\StringGenerator;
+use App\Service\TransactionService;
 use DateInterval;
 use DateTimeUtil;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,7 +22,10 @@ use Symfony\Component\Routing\Annotation\Route;
 class TransactionController extends AbstractController
 {
     private $generator;
-    public function __construct(private EntityManagerInterface $em){
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly TransactionService $transactionService
+    ){
         $this->generator = new StringGenerator();
     }
 
@@ -92,92 +96,19 @@ class TransactionController extends AbstractController
     #[Route('/api/transaction/recharge', name: 'app_transaction_recharge')]
     public function recharge(Request $request): Response
     {
-        $dateUtil = new DateTimeUtil();
         $decoded = json_decode($request->getContent());
         $cardUid = $decoded->uid;
         $type = $decoded->type;
-        $subs = new SubscriptionPlan();
-        if($type == "SUBSCRIPTION"){
-            $subs_id = $decoded->subs_id;
-            $subs = $this->em->getRepository(SubscriptionPlan::class)->find($subs_id);
-            if(!$subs){
-                return $this->json(["status"=>false,"message"=> "Subscription Plan invalid"]);
-            }
-            
-            $amount = $subs->getAmount();
-        }elseif($type == "Fix"){
-            $amount = $decoded->amount;
-        }else{
-            return $this->json(["status"=>false,"message"=> "Type de Recharge invalide"]);
-        }
-                        
-        $userId = $this->getUser()->getUserIdentifier();
-        $user = $this->em->getRepository(User::class)->findOneBy(["username"=>$userId]);
-        $card = $this->em->getRepository(NfcCard::class)->findOneBy(["uid"=>$cardUid]);
-        
-        //$card = new NfcCard();
-        if($card){
-            if(!$card->isIsActive()){
-                return $this->json(["status"=>false,"message"=>"Votre carte est invalide."],400);
+        $subsId = $decoded->subs_id;
+        $amount = $decoded->amount;
 
-            }
-            $rest = $user->getBalance() - $amount;
-            $bal = $card->getBalance();
-        
-            if($rest < 0){
-            return $this->json(["status"=>false,"message"=>"Votre balance est insufisante."],400);
-            }
-            
-            $date = new \DateTime('now',new \DateTimeZone('Africa/Kinshasa'));
-            $now = new \DateTime('now',new \DateTimeZone('Africa/Kinshasa'));
-            $card->setUpdatedAt($date);
-            $user->setUpdatedAt($date);
-            
-            $trans = new RechargeCarte();
-            $trans->setAmount($amount);
-            $trans->setCard($card);
-            $trans->setCreatedBy($user->getUsername());
-            $trans->setCreatedAt($date);
-            
-            $trans->setReference($this->generator->generate(10));
-           
-            if($type == "FIX"){
-               
-                $card->setBalance($card->getBalance() + $amount);
-                
-            $trans->setOldBalance($bal);
-            $trans->setNewBalance($card->getBalance());
-
-            }
-            
-            if($type == "SUBSCRIPTION"){
-                $durationInDays = $subs->getDuration();
-                $interval = new DateInterval("P{$durationInDays}D");
-                $now->add($interval);
-            $card->setSubscriptionEndDate($date);
-            $card->setSubscriptionEndDate( $now);
-            $trans->setFromDate($date);
-            $trans->setToDate( $now);
-            $trans->setOldFromDate($card->getSubscriptionFromDate());
-            $trans->setOldToDate($card->getSubscriptionEndDate());
-            $trans->setSubscriptionId($subs_id);
-            $trans->setRechargeType($type);
-            
-            }
-            $user->setBalance($rest);
-            $this->em->persist($user);
-            $this->em->persist($card);
-            //$trans->setRouteId($routeId);
-            $this->em->persist($trans);
-            $this->em->flush();
-            return $this->json(["status"=>true,"message"=>"Recharge effectuee avec succes","balance"=>$rest]);
-
-
-        }else{
-            return $this->json(["status"=>false,"message"=>"Votre carte est invalide."],400);
-        }
-        
-
+        $response = $this->transactionService->recharge(
+            $type,
+            $subsId,
+            $amount,
+            $cardUid
+        );
+        return $this->json($response, $response["status"] ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST);
     }
 
     #[Route('/api/card/create', name: 'app_card_create')]

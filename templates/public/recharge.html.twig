@@ -4,7 +4,7 @@
 
 {% block body %}
 
-<div class="home-page">
+<div>
     <div class="header-wrap">
         <header>
             <a href="{{ path('app_public') }}" class="logo">
@@ -84,10 +84,11 @@
                                         <button type="submit" class="btn mt-4" style="color: white">Suivant</button>
                                     </form>
                                 {% else %}
-                                    {% if step ==2 %}
+                                    {% if step == 2 and card is not null %}
                                         <form method="post" class="row">
                                         <div class="col-md-6">
                                             <div style="border-radius: 10px; border: 1px solid #eee; padding: 20px" class="mb-4">
+                                                <p class="mb-0" style="display: flex; justify-content: space-between"><span>Noms</span><b class="text-primary">{{ card.cardHolder }}</b></p>
                                                 <p class="mb-0" style="display: flex; justify-content: space-between"><span>Num. carte</span><b class="text-primary">#{{ card.uid }}</b></p>
                                                 <p style="display: flex; justify-content: space-between" class="mb-0 "><span>Type</span> <b>{{ type }}</b></p>
                                             </div>
@@ -105,7 +106,7 @@
                                                             </label>
                                                             <p class="mb-1"><i class="fa-solid fa-bars"></i><span class="ml-2">{{ sub.description }}</span></p>
                                                             <p class="mb-2">{{ sub.duration }} Jours</p>
-                                                            <p class="text-primary mb-2"><b>{{ sub.amount }} CDF</b></p>
+                                                            <p class="text-primary mb-2"><b>{{ sub.amount }} {{ sub.currency != null ? sub.currency.code : currency.code }}</b></p>
                                                         </div>
                                                         {% endfor %}
                                                         </div>
@@ -113,16 +114,18 @@
                                             {% endif %}
                                         </div>
                                         <div class="col-md-6">
+                                            {% if type != "SUBSCRIPTION" %}
                                             <label for="amount">Combien voulez-vous payer</label>
                                             <div class="input-group mb-3">
                                                 <div class="input-group-prepend">
-                                                    <span class="input-group-text">CDF</span>
+                                                    <span class="input-group-text">{{ currency.code }}</span>
                                                 </div>
-                                                <input type="text" class="form-control" name="amount" id="amount" aria-label="Amount (CDF)">
+                                                <input type="text" class="form-control" name="amount" id="amount" aria-label="Amount ({{ currency.code }})">
                                                 <div class="input-group-append">
                                                     <span class="input-group-text">.00</span>
                                                 </div>
                                             </div>
+                                            {% endif %}
 
                                             <label for="phoneNumber">Numero mobile money</label>
                                             <div class="input-group mb-3">
@@ -131,6 +134,13 @@
                                                 </div>
                                                 <input type="text" class="form-control" name="phoneNumber" id="phoneNumber" aria-label="Numero mobile money">
                                             </div>
+                                            <p>
+                                                <i class="fa-regular fa-credit-card"></i>
+                                                <a href="https://cardpayment.flexpay.cd/v1.1/pay" target="_blank">
+                                                    <span class="mr-2 ml-2">Payer avec une carte de credit</span>
+                                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                                </a>
+                                            </p>
                                             <button type="submit" class="btn mt-4" style="color: white">Confirmer</button>
                                         </div>
                                         </form>

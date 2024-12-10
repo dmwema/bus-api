@@ -52,6 +52,9 @@ class Transaction
     #[ORM\ManyToOne(inversedBy: 'transactions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Route $route = null;
+
+    #[ORM\ManyToOne]
+    private ?Currency $currency = null;
     public function __construct()
     {
        
@@ -202,6 +205,18 @@ class Transaction
     public function setRoute(?Route $route): static
     {
         $this->route = $route;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?Currency
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(?Currency $currency): static
+    {
+        $this->currency = $currency;
 
         return $this;
     }

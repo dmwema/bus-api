@@ -61,6 +61,9 @@ class Line
     #[ORM\ManyToOne(inversedBy: 'liness')]
     private ?Enterprise $enterprise = null;
 
+    #[ORM\ManyToOne]
+    private ?Currency $currency = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTime('now',new \DateTimeZone('Africa/Kinshasa'));
@@ -330,5 +333,17 @@ class Line
         //"region"=>"/api/regions/".$line->getRegion()->getId(),
         "description"=>$this->getDescription(),
         ];
+    }
+
+    public function getCurrency(): ?Currency
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(?Currency $currency): static
+    {
+        $this->currency = $currency;
+
+        return $this;
     }
 }

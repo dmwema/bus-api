@@ -31,7 +31,7 @@ class PaymentService
             "phone"         => $payment->getPhoneNumber(),
             "reference"     => $payment->getRef(),
             "amount"        => $payment->getAmount(),
-            "currency"      => "CDF",
+            "currency"      => $payment->getCurrency()->getCode(),
             "callbackUrl"   => "https://abc.abcd",
         ];
 
